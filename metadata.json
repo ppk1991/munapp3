@@ -1,0 +1,8 @@
+{
+  "name": "MUNAPP Chișinău",
+  "description": "A comprehensive municipal service platform for citizens of Chișinău to manage taxes, services, and administrative cases through a unified digital interface.",
+  "requestFramePermissions": [
+    "geolocation",
+    "camera"
+  ]
+}
