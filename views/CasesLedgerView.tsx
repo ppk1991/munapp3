@@ -1,49 +1,42 @@
-
 import React from 'react';
-import { ChevronRight, Filter } from 'lucide-react';
+import { ChevronRight, Menu } from 'lucide-react';
 
 const CasesLedgerView: React.FC = () => {
   const cases = [
-    { id: "12345", date: "2023-10-26", title: "Transport Pass Renewal", status: "Approved", color: "bg-green-100 text-green-700" },
-    { id: "12344", date: "2023-09-15", title: "Mircea cel Bătrân Alley Rehabilitation Feedback", status: "In Progress", color: "bg-blue-100 text-blue-700" },
-    { id: "12343", date: "2023-08-01", title: "Kindergarten Waitlist Confirmation", status: "Completed", color: "bg-gray-100 text-gray-700" },
-    { id: "12342", date: "2023-07-20", title: "Subsidized Heating Application", status: "Completed", color: "bg-gray-100 text-gray-700" },
+    { id: "F12345", date: "2023-10-26", title: "Application for Parking Permit", status: "Approved", color: "text-green-600 bg-green-50" },
+    { id: "F12344", date: "2023-09-15", title: "Feedback for Public Bus Performance", status: "In Progress", color: "text-orange-600 bg-orange-50" },
+    { id: "F12343", date: "2023-08-01", title: "Child Registration", status: "Completed", color: "text-emerald-600 bg-emerald-50" },
+    { id: "F12342", date: "2023-07-20", title: "Residence Change Notification", status: "Completed", color: "text-emerald-600 bg-emerald-50" },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-800">Municipal Ledger</h2>
-        <button className="p-2 text-gray-400 hover:text-blue-600">
-          <Filter className="w-5 h-5" />
-        </button>
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <div className="flex items-center justify-between px-1">
+        <h2 className="text-xl font-black text-gray-800">My Cases Ledger</h2>
+        <Menu className="w-6 h-6 text-gray-600" />
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {cases.map((c, idx) => (
           <div 
             key={idx}
-            className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group"
+            className="bg-white p-5 rounded-3xl border border-gray-50 shadow-sm flex items-center justify-between group hover:border-blue-100 transition-all cursor-pointer"
           >
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Service #{c.id}</span>
-              <span className="text-xs text-gray-400 font-medium">{c.date}</span>
-            </div>
-            <h3 className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors">{c.title}</h3>
-            <div className="flex items-center justify-between mt-4">
-              <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${c.color}`}>
-                Status: {c.status}
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between items-center mb-1">
+                <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Case #{c.id}</p>
+                <p className="text-[10px] font-bold text-gray-300">{c.date}</p>
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-blue-600 transition-colors" />
+              <h3 className="text-xs font-black text-gray-700 truncate pr-4">{c.title}</h3>
+              <div className="mt-4 flex items-center justify-between">
+                <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter ${c.color}`}>
+                  Status: {c.status}
+                </span>
+                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-blue-600 transition-colors" />
+              </div>
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="bg-blue-50 p-4 rounded-xl">
-        <p className="text-xs text-blue-700 leading-relaxed italic text-center">
-          History of direct deliverables and social services linked to your municipal eID.
-        </p>
       </div>
     </div>
   );

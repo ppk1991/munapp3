@@ -1,4 +1,6 @@
 
+export type Language = 'en' | 'ro' | 'ru';
+
 export enum AppView {
   LOGIN = 'LOGIN',
   DASHBOARD = 'DASHBOARD',
@@ -17,7 +19,9 @@ export enum AppView {
   FREE_PARKING = 'FREE_PARKING',
   MAP = 'MAP',
   CONFIRMATION = 'CONFIRMATION',
-  TRANSFER = 'TRANSFER'
+  TRANSFER = 'TRANSFER',
+  CIVIC_TECH = 'CIVIC_TECH',
+  IMPORTANT_NUMBERS = 'IMPORTANT_NUMBERS'
 }
 
 export interface Case {

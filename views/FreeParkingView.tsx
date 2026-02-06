@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { ChevronLeft, MapPin, ParkingCircle, Info, Building2, ExternalLink } from 'lucide-react';
+import { ChevronLeft, MapPin, ParkingCircle, Info, Building2, ExternalLink, Filter } from 'lucide-react';
 import { FreeParkingLocation } from '../types';
 
 interface FreeParkingViewProps {
@@ -10,16 +10,19 @@ interface FreeParkingViewProps {
 
 const FreeParkingView: React.FC<FreeParkingViewProps> = ({ onBack, onNavigateToMap }) => {
   const [selectedSector, setSelectedSector] = useState('Ciocana');
+  const [showSuburbsOnly, setShowSuburbsOnly] = useState(false);
   
   const sectors = ['Centru', 'Ciocana', 'Botanica', 'Buiucani', 'Rîșcani'];
 
   const locations: FreeParkingLocation[] = useMemo(() => [
-    // Ciocana / Bubuieci / Colonița
+    // Ciocana / Bubuieci / Colonița / Tohatin / Budești
     { id: 'FP-C1', name: 'Mircea cel Bătrân Alley Public Spot', address: 'Bulevardul Mircea cel Bătrân, Ciocana', sector: 'Ciocana', spots: 45, status: 'Available' },
     { id: 'FP-C2', name: 'Ginta Latină Market Perimeter', address: 'Str. Ginta Latină 12', sector: 'Ciocana', spots: 20, status: 'Limited' },
     { id: 'FP-B1', name: 'Bubuieci Community Center Lot', address: 'Str. Centrală 1, Bubuieci', sector: 'Ciocana', spots: 30, status: 'Available', isSuburb: true },
     { id: 'FP-B2', name: 'Bubuieci School Zone', address: 'Str. Școlii, Bubuieci', sector: 'Ciocana', spots: 15, status: 'High Demand', isSuburb: true },
     { id: 'FP-COL1', name: 'Colonița Public Square', address: 'Str. Ștefan cel Mare, Colonița', sector: 'Ciocana', spots: 25, status: 'Available', isSuburb: true },
+    { id: 'FP-TOH1', name: 'Tohatin Local Hall Parking', address: 'Str. Mihai Eminescu, Tohatin', sector: 'Ciocana', spots: 18, status: 'Available', isSuburb: true },
+    { id: 'FP-BUD1', name: 'Budești Public Park Lot', address: 'Str. Bălțata, Budești', sector: 'Ciocana', spots: 22, status: 'Available', isSuburb: true },
 
     // Centru / Codru
     { id: 'FP-CE1', name: 'National Library Rear Area', address: 'Str. 31 August 1989', sector: 'Centru', spots: 12, status: 'High Demand' },
@@ -32,20 +35,27 @@ const FreeParkingView: React.FC<FreeParkingViewProps> = ({ onBack, onNavigateToM
     { id: 'FP-SIN1', name: 'Sîngera Cultural Center', address: 'Str. 31 August, Sîngera', sector: 'Botanica', spots: 50, status: 'Available', isSuburb: true },
     { id: 'FP-BAC1', name: 'Băcioi Public Market', address: 'Str. Independenței, Băcioi', sector: 'Botanica', spots: 30, status: 'Limited', isSuburb: true },
 
-    // Buiucani / Durlești / Ghidighici
+    // Buiucani / Durlești / Ghidighici / Trușeni
     { id: 'FP-BU1', name: 'Dendrarium Side Parking', address: 'Str. Ion Creangă', sector: 'Buiucani', spots: 35, status: 'Limited' },
     { id: 'FP-BU2', name: 'Alunelul Park Front', address: 'Calea Ieșilor', sector: 'Buiucani', spots: 50, status: 'Available' },
     { id: 'FP-DUR1', name: 'Durlești Main Square', address: 'Str. Alexandru cel Bun, Durlești', sector: 'Buiucani', spots: 40, status: 'Available', isSuburb: true },
-    { id: 'FP-GHI1', name: 'Ghidighici Beach Entrance', address: 'Str. Victoriei, Ghidighici', sector: 'Buiucani', spots: 120, status: 'Available', isSuburb: true },
+    { id: 'FP-TRU1', name: 'Trușeni Community Lot', address: 'Str. 27 August, Trușeni', sector: 'Buiucani', spots: 25, status: 'Available', isSuburb: true },
 
-    // Rîșcani / Stăuceni / Cricova
+    // Rîșcani / Stăuceni / Cricova / Ciorescu
     { id: 'FP-R1', name: 'Afgan Park Perimeter', address: 'Str. Miron Costin', sector: 'Rîșcani', spots: 25, status: 'High Demand' },
     { id: 'FP-R2', name: 'Circus Peripheral Area', address: 'Calea Orheiului', sector: 'Rîșcani', spots: 80, status: 'Available' },
     { id: 'FP-STA1', name: 'Stăuceni Community Park', address: 'Str. Unirii, Stăuceni', sector: 'Rîșcani', spots: 35, status: 'Available', isSuburb: true },
     { id: 'FP-CRI1', name: 'Cricova Winery Public Lot', address: 'Str. Petru Ungureanu, Cricova', sector: 'Rîșcani', spots: 60, status: 'Limited', isSuburb: true },
+    { id: 'FP-CIO1', name: 'Ciorescu Main Sports Complex', address: 'Str. Alexandru cel Bun, Ciorescu', sector: 'Rîșcani', spots: 45, status: 'Available', isSuburb: true },
   ], []);
 
-  const filteredLocations = locations.filter(loc => loc.sector === selectedSector);
+  const filteredLocations = useMemo(() => {
+    return locations.filter(loc => {
+      const matchSector = loc.sector === selectedSector;
+      const matchSuburb = showSuburbsOnly ? loc.isSuburb : true;
+      return matchSector && matchSuburb;
+    });
+  }, [selectedSector, showSuburbsOnly, locations]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -54,6 +64,10 @@ const FreeParkingView: React.FC<FreeParkingViewProps> = ({ onBack, onNavigateToM
       case 'High Demand': return 'text-red-600 bg-red-50';
       default: return 'text-gray-600 bg-gray-50';
     }
+  };
+
+  const isNearbyResident = (loc: FreeParkingLocation) => {
+    return loc.address.includes('Bubuieci') || (loc.sector === 'Ciocana' && !loc.isSuburb);
   };
 
   return (
@@ -76,16 +90,16 @@ const FreeParkingView: React.FC<FreeParkingViewProps> = ({ onBack, onNavigateToM
           </div>
           <div>
             <h3 className="text-lg font-bold leading-tight">Public Finder</h3>
-            <p className="text-[10px] font-bold uppercase opacity-80 tracking-widest">No-Cost Zones Chișinău</p>
+            <p className="text-[10px] font-bold uppercase opacity-80 tracking-widest">Across Chișinău & Suburbs</p>
           </div>
         </div>
         <p className="text-xs opacity-90 leading-relaxed font-medium">
-          Find public parking spaces that do not require an MPay fee or residential permit across all sectors and suburbs.
+          Select any sector or suburb to find no-cost public parking. All data verified by municipal traffic directions.
         </p>
       </div>
 
       <div className="space-y-4">
-        {/* Sector Selector */}
+        {/* Main Sector Selector */}
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
           {sectors.map(sector => (
             <button
@@ -102,6 +116,17 @@ const FreeParkingView: React.FC<FreeParkingViewProps> = ({ onBack, onNavigateToM
           ))}
         </div>
 
+        {/* Suburb Toggle */}
+        <button 
+          onClick={() => setShowSuburbsOnly(!showSuburbsOnly)}
+          className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 font-bold text-[10px] uppercase tracking-widest transition-all ${
+            showSuburbsOnly ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'bg-white border-gray-100 text-gray-400'
+          }`}
+        >
+          <Filter className="w-3.5 h-3.5" />
+          {showSuburbsOnly ? 'Showing Suburbs Only' : 'Include Suburban Zones'}
+        </button>
+
         {/* Locations List */}
         <div className="space-y-3">
           {filteredLocations.length > 0 ? (
@@ -111,7 +136,10 @@ const FreeParkingView: React.FC<FreeParkingViewProps> = ({ onBack, onNavigateToM
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{loc.sector}</span>
                     {loc.isSuburb && (
-                      <span className="text-[8px] font-black bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded uppercase tracking-tighter">Suburb / Nearby</span>
+                      <span className="text-[8px] font-black bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded uppercase tracking-tighter">Suburb</span>
+                    )}
+                    {isNearbyResident(loc) && (
+                      <span className="text-[8px] font-black bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded uppercase tracking-tighter">Resident Area</span>
                     )}
                   </div>
                   <div className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${getStatusColor(loc.status)}`}>
@@ -147,7 +175,7 @@ const FreeParkingView: React.FC<FreeParkingViewProps> = ({ onBack, onNavigateToM
           ) : (
             <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
                <Info className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-               <p className="text-sm font-bold text-gray-400">No free zones listed for this sector yet.</p>
+               <p className="text-sm font-bold text-gray-400">No matching zones found.</p>
             </div>
           )}
         </div>
@@ -155,7 +183,7 @@ const FreeParkingView: React.FC<FreeParkingViewProps> = ({ onBack, onNavigateToM
 
       <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
         <p className="text-[10px] text-slate-500 leading-relaxed text-center font-medium italic">
-          Free parking availability is updated based on municipal data and community feedback. Suburbs are included within their respective administrative sectors.
+          Free parking zones include both central municipal spots and suburban public lots. Availability is updated every 30 minutes.
         </p>
       </div>
     </div>

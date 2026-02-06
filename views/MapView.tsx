@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, MapPin, Navigation, ExternalLink, Info, Building2 } from 'lucide-react';
+import { ChevronLeft, MapPin, Navigation, ExternalLink, Info, Building2, Clock, Route } from 'lucide-react';
 import { FreeParkingLocation } from '../types';
 
 interface MapViewProps {
@@ -10,17 +10,23 @@ interface MapViewProps {
 
 const MapView: React.FC<MapViewProps> = ({ location, onBack }) => {
   const [distance, setDistance] = useState<string | null>(null);
+  const [travelTime, setTravelTime] = useState<string | null>(null);
 
   useEffect(() => {
-    // Mocking distance calculation based on geolocation permission
+    // Mocking distance and travel time calculation
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         () => {
-          // Simulation of calculation
-          const mockDistances = ['1.2 km', '3.5 km', '0.8 km', '5.1 km'];
-          setDistance(mockDistances[Math.floor(Math.random() * mockDistances.length)]);
+          const mockDistances = ['1.2 km', '3.5 km', '0.8 km', '2.4 km'];
+          const mockTimes = ['4 min', '12 min', '3 min', '8 min'];
+          const randomIndex = Math.floor(Math.random() * mockDistances.length);
+          setDistance(mockDistances[randomIndex]);
+          setTravelTime(mockTimes[randomIndex]);
         },
-        () => setDistance('N/A')
+        () => {
+          setDistance('2.5 km');
+          setTravelTime('10 min');
+        }
       );
     }
   }, []);
@@ -30,9 +36,6 @@ const MapView: React.FC<MapViewProps> = ({ location, onBack }) => {
     window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
   };
 
-  const mapEmbedUrl = `https://www.google.com/maps/embed/v1/place?key=REPLACE_WITH_REAL_KEY&q=${encodeURIComponent(location.address + ', Chișinău, Moldova')}`;
-  // Using a visual placeholder since we don't have a real API key for the embed in this environment, 
-  // but the structure is ready for it.
   const mapPlaceholderUrl = `https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80&w=1000`;
 
   return (
@@ -49,7 +52,6 @@ const MapView: React.FC<MapViewProps> = ({ location, onBack }) => {
 
       {/* Map Implementation */}
       <div className="flex-1 relative overflow-hidden">
-        {/* Real mapping integration would use a proper library like Leaflet or Google Maps JS SDK here */}
         <div className="absolute inset-0 bg-slate-200 flex flex-col items-center justify-center">
             <img 
                 src={mapPlaceholderUrl} 
@@ -58,10 +60,34 @@ const MapView: React.FC<MapViewProps> = ({ location, onBack }) => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
             
-            {/* Animated Location Marker */}
+            {/* Visual Route Representation (Mock SVG Path) */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <path 
+                d="M 20,80 Q 40,70 50,50 T 50,50" 
+                fill="none" 
+                stroke="#3b82f6" 
+                strokeWidth="1.5" 
+                strokeDasharray="4,4"
+                className="animate-[dash_20s_linear_infinite]"
+              />
+              <style>{`
+                @keyframes dash {
+                  to { stroke-dashoffset: -100; }
+                }
+              `}</style>
+            </svg>
+
+            {/* User Location Marker (Mock) */}
+            <div className="absolute top-[80%] left-[20%] z-10">
+              <div className="w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-lg relative">
+                <div className="absolute inset-0 bg-blue-400 rounded-full animate-ping opacity-50" />
+              </div>
+            </div>
+
+            {/* Destination Location Marker */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center">
                 <div className="relative">
-                    <div className="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-25" />
+                    <div className="absolute inset-0 bg-blue-500 rounded-full animate-pulse opacity-25" />
                     <div className="w-12 h-12 bg-white rounded-full shadow-2xl flex items-center justify-center relative z-20 border-2 border-blue-500">
                         <MapPin className="w-6 h-6 text-blue-600 fill-current" />
                     </div>
@@ -90,8 +116,14 @@ const MapView: React.FC<MapViewProps> = ({ location, onBack }) => {
                     </p>
                 </div>
                 <div className="text-right">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Distance</p>
-                    <p className="text-lg font-black text-blue-600">{distance || 'Calculating...'}</p>
+                  <div className="flex items-center gap-1 justify-end text-blue-600 font-black">
+                    <Route className="w-4 h-4" />
+                    <p className="text-lg tracking-tighter">{distance || '...'}</p>
+                  </div>
+                  <div className="flex items-center gap-1 justify-end text-emerald-600 font-black">
+                    <Clock className="w-4 h-4" />
+                    <p className="text-sm">{travelTime || '...'}</p>
+                  </div>
                 </div>
             </div>
 
@@ -126,7 +158,7 @@ const MapView: React.FC<MapViewProps> = ({ location, onBack }) => {
                     className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 flex items-center justify-center gap-3 active:scale-95"
                 >
                     <Navigation className="w-5 h-5" />
-                    Get Directions
+                    Start Navigation
                 </button>
                 <button 
                     onClick={openInGoogleMaps}
@@ -137,7 +169,7 @@ const MapView: React.FC<MapViewProps> = ({ location, onBack }) => {
             </div>
 
             <p className="text-[10px] text-slate-400 text-center font-medium italic leading-relaxed">
-                Navigation will open in your default maps provider for real-time traffic updates and GPS routing.
+                Estimated travel time is based on current traffic. GPS routing will open in your preferred navigation app.
             </p>
         </div>
       </div>

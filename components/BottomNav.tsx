@@ -1,19 +1,26 @@
 
 import React from 'react';
 import { Home, Briefcase, Bell, User } from 'lucide-react';
-import { AppView } from '../types';
+import { AppView, Language } from '../types';
 
 interface BottomNavProps {
   activeView: AppView;
   onNavigate: (view: AppView) => void;
+  language: Language;
 }
 
-const BottomNav: React.FC<BottomNavProps> = ({ activeView, onNavigate }) => {
+const BottomNav: React.FC<BottomNavProps> = ({ activeView, onNavigate, language }) => {
+  const t = {
+    en: { home: 'Home', services: 'Services', cases: 'Cases', profile: 'Profile' },
+    ro: { home: 'Acasă', services: 'Servicii', cases: 'Dosare', profile: 'Profil' },
+    ru: { home: 'Главная', services: 'Услуги', cases: 'Дела', profile: 'Профиль' }
+  }[language];
+
   const tabs = [
-    { icon: Home, label: 'Home', view: AppView.DASHBOARD },
-    { icon: Briefcase, label: 'Services', view: AppView.SERVICES },
-    { icon: Bell, label: 'Cases', view: AppView.CASES_LEDGER },
-    { icon: User, label: 'Profile', view: AppView.PROFILE },
+    { icon: Home, label: t.home, view: AppView.DASHBOARD },
+    { icon: Briefcase, label: t.services, view: AppView.SERVICES },
+    { icon: Bell, label: t.cases, view: AppView.CASES_LEDGER },
+    { icon: User, label: t.profile, view: AppView.PROFILE },
   ];
 
   return (

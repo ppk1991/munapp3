@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { AppView, Appointment, ParkingZone, FreeParkingLocation } from './types';
+import { AppView, Appointment, ParkingZone, FreeParkingLocation, Language } from './types';
 import LoginView from './views/LoginView';
 import DashboardView from './views/DashboardView';
 import ServicesView, { ServiceItem } from './views/ServicesView';
@@ -18,12 +18,15 @@ import ConfirmationView from './views/ConfirmationView';
 import UtilityPaymentView from './views/UtilityPaymentView';
 import FreeParkingView from './views/FreeParkingView';
 import MapView from './views/MapView';
+import CivicTechView from './views/CivicTechView';
+import EmergencyContactsView from './views/EmergencyContactsView';
 import BottomNav from './components/BottomNav';
 import Header from './components/Header';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>(AppView.LOGIN);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [language, setLanguage] = useState<Language>('en');
   const [selectedService, setSelectedService] = useState<ServiceItem | null>(null);
   const [reschedulingAppointment, setReschedulingAppointment] = useState<Appointment | null>(null);
   const [walletBalance, setWalletBalance] = useState<number>(500);
@@ -31,7 +34,6 @@ const App: React.FC = () => {
   const [selectedParkingLocation, setSelectedParkingLocation] = useState<FreeParkingLocation | null>(null);
   const [notifications, setNotifications] = useState<string[]>([]);
   
-  // Confirmation state
   const [lastConfirmation, setLastConfirmation] = useState<{
     title: string;
     description: string;
@@ -46,7 +48,6 @@ const App: React.FC = () => {
     }
   } | null>(null);
 
-  // Parking Zones State
   const [parkingZones, setParkingZones] = useState<ParkingZone[]>([
     { 
       id: 'home-zone', 
@@ -69,7 +70,6 @@ const App: React.FC = () => {
 
   const activeZone = parkingZones.find(z => z.id === activeParkingZoneId) || parkingZones[0];
 
-  // State for dynamic payments (Utilities, Fees)
   const [pendingPayment, setPendingPayment] = useState<{ amount: string, description: string, isProductPurchase?: boolean, productName?: string } | null>(null);
 
   const [appointments, setAppointments] = useState<Appointment[]>([
@@ -80,7 +80,7 @@ const App: React.FC = () => {
       time: '10:00 AM',
       location: 'Chisinau City Hall, Room 302',
       fullAddress: 'Vlaicu Pârcălab St 83, Chișinău 2012, Moldova',
-      instructions: 'Please bring your original property deed and a valid eID. Go to the 3rd floor, turn right after the elevator.',
+      instructions: 'Please bring your original property deed and a valid eID.',
       status: 'Upcoming'
     }
   ]);
@@ -88,6 +88,7 @@ const App: React.FC = () => {
   const handleLogin = () => {
     setIsAuthenticated(true);
     setCurrentView(AppView.DASHBOARD);
+    setNotifications(prev => ["Welcome to MUNAPP Chișinău. Secure eID session active.", ...prev]);
   };
 
   const handleServiceSelect = (service: ServiceItem) => {
@@ -104,28 +105,16 @@ const App: React.FC = () => {
   const handleCaseConfirm = () => {
     if (selectedService?.isFree) {
       let details = undefined;
-      
-      // Simulate backend generating specific assignment details
-      if (selectedService.category === 'health') {
-        details = {
-          time: "11:30 AM",
-          office: "Cabinet 204",
-          street: "Str. Kiev 3",
-          doctor: "Dr. Elena Ionescu"
-        };
-        setNotifications(prev => [`Doctor assigned: ${details.doctor} at ${details.time}`, ...prev]);
-      } else if (selectedService.category === 'education') {
-        details = {
-          time: "09:00 AM (Monday)",
-          office: "Secretariat / Room 1",
-          street: "Selected Institution Address"
-        };
-        setNotifications(prev => [`School intake scheduled for ${details.time}`, ...prev]);
-      }
+      let customMsg = `Your request for ${selectedService.title} has been confirmed.`;
 
+      if (selectedService.category === 'social' || selectedService.category === 'education') {
+        customMsg = "Notification of receiving data from the citizen to the direction within the town hall is received and will be processed.";
+        setNotifications(prev => ["Town Hall: Case received for processing.", ...prev]);
+      }
+      
       setLastConfirmation({
         title: "Registration Complete",
-        description: `Your request for ${selectedService.title} has been confirmed. See assignment details below.`,
+        description: customMsg,
         id: `SRV-${Math.floor(Math.random() * 90000) + 10000}`,
         type: 'service',
         details
@@ -148,48 +137,56 @@ const App: React.FC = () => {
     setCurrentView(AppView.PAYMENT);
   };
 
-  const handlePaymentConfirm = (amountValue?: string) => {
-    const finalAmount = amountValue || pendingPayment?.amount || "0";
+  const handlePaymentConfirm = (amountValue: string, useWallet: boolean = false) => {
+    const finalAmount = parseFloat(amountValue);
+    const transactionId = `MPAY-${Math.floor(Math.random() * 90000) + 10000}`;
     
-    if (currentView === AppView.TOP_UP || pendingPayment?.isProductPurchase) {
-      if (pendingPayment?.isProductPurchase) {
-        setActiveTransportProduct(pendingPayment.productName || null);
-        setLastConfirmation({
-          title: "Pass Purchased",
-          description: `You have successfully purchased: ${pendingPayment.productName}. It is now active on your digital identity.`,
-          amount: finalAmount,
-          id: `TRN-${Math.floor(Math.random() * 90000) + 10000}`,
-          type: 'payment'
-        });
-      } else {
-        const topUpValue = parseFloat(finalAmount);
-        setWalletBalance(prev => prev + topUpValue);
-        setLastConfirmation({
-          title: "Wallet Topped Up",
-          description: `Your MUNAPP Wallet balance has been updated. New balance: ${(walletBalance + topUpValue).toFixed(2)} MDL.`,
-          amount: finalAmount,
-          id: `WAL-${Math.floor(Math.random() * 90000) + 10000}`,
-          type: 'payment'
-        });
-      }
-      setPendingPayment(null);
-      setCurrentView(AppView.CONFIRMATION);
-    } else {
+    // Top up logic
+    if (currentView === AppView.TOP_UP) {
+      setWalletBalance(prev => prev + finalAmount);
+      setNotifications(prev => [`MPay: Wallet topped up by ${amountValue} MDL.`, ...prev]);
+      setLastConfirmation({
+        title: "Wallet Topped Up",
+        description: `Your MUNAPP Wallet balance has been updated via bank card.`,
+        amount: amountValue,
+        id: transactionId,
+        type: 'payment'
+      });
+    } 
+    // Transport product logic
+    else if (pendingPayment?.isProductPurchase) {
+      if (useWallet) setWalletBalance(prev => prev - finalAmount);
+      setActiveTransportProduct(pendingPayment.productName || null);
+      setNotifications(prev => [`MPay: Purchased ${pendingPayment.productName}.`, ...prev]);
+      setLastConfirmation({
+        title: "Pass Purchased",
+        description: `Successfully purchased: ${pendingPayment.productName}.`,
+        amount: amountValue,
+        id: transactionId,
+        type: 'payment'
+      });
+    }
+    // Standard payment logic (Utilities, Services)
+    else {
+      if (useWallet) setWalletBalance(prev => prev - finalAmount);
+      setNotifications(prev => [`MPay: Payment of ${amountValue} MDL confirmed.`, ...prev]);
       setLastConfirmation({
         title: "Payment Successful",
         description: `Transaction completed for: ${pendingPayment?.description || "Municipal Service"}.`,
-        amount: finalAmount,
-        id: `MPAY-${Math.floor(Math.random() * 90000) + 10000}`,
+        amount: amountValue,
+        id: transactionId,
         type: 'payment'
       });
-      setPendingPayment(null);
-      setCurrentView(AppView.CONFIRMATION);
     }
+
+    setPendingPayment(null);
+    setCurrentView(AppView.CONFIRMATION);
   };
 
   const handleTransferConfirm = (amount: string, recipient: string) => {
     const amountNum = parseFloat(amount);
     setWalletBalance(prev => prev - amountNum);
+    setNotifications(prev => [`MPay: Transfer of ${amount} MDL sent to ${recipient}.`, ...prev]);
     setLastConfirmation({
       title: "Transfer Sent",
       description: `You have successfully transferred ${amount} MDL to ${recipient}.`,
@@ -220,24 +217,14 @@ const App: React.FC = () => {
     setCurrentView(AppView.APPOINTMENTS);
   };
 
-  const handleRescheduleStart = (apt: Appointment) => {
-    setReschedulingAppointment(apt);
-    setCurrentView(AppView.RESCHEDULE_APPOINTMENT);
-  };
-
-  const handleCancelAppointment = (id: string) => {
-    setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'Cancelled' } : a));
-  };
-
-  const handleNavigateToMap = (location: FreeParkingLocation) => {
-    setSelectedParkingLocation(location);
-    setCurrentView(AppView.MAP);
-  };
-
   const handleLogout = () => {
     setIsAuthenticated(false);
     setCurrentView(AppView.LOGIN);
   };
+
+  const upcoming = appointments.filter(a => a.status === 'Upcoming').sort((a, b) => a.date.localeCompare(b.date));
+  const nextApt = upcoming[0];
+  const nextAptLabel = nextApt ? `${nextApt.date} - ${nextApt.time}` : "No Upcoming Appointments";
 
   if (!isAuthenticated) {
     return <LoginView onLogin={handleLogin} />;
@@ -255,15 +242,23 @@ const App: React.FC = () => {
             activeZoneName={`${activeZone.name} (${activeZone.sector})`}
             activePass={activeTransportProduct}
             notifications={notifications}
+            nextAppointmentLabel={nextAptLabel}
+            language={language}
           />
         )}
         {currentView === AppView.SERVICES && (
           <ServicesView onServiceSelect={handleServiceSelect} />
         )}
+        {currentView === AppView.CIVIC_TECH && (
+           <CivicTechView onBack={() => setCurrentView(AppView.DASHBOARD)} language={language} />
+        )}
+        {currentView === AppView.IMPORTANT_NUMBERS && (
+           <EmergencyContactsView onBack={() => setCurrentView(AppView.DASHBOARD)} language={language} />
+        )}
         {currentView === AppView.FREE_PARKING && (
           <FreeParkingView 
             onBack={() => setCurrentView(AppView.SERVICES)} 
-            onNavigateToMap={handleNavigateToMap}
+            onNavigateToMap={(loc) => { setSelectedParkingLocation(loc); setCurrentView(AppView.MAP); }}
           />
         )}
         {currentView === AppView.MAP && selectedParkingLocation && (
@@ -288,13 +283,14 @@ const App: React.FC = () => {
           <PaymentView 
             initialAmount={pendingPayment?.amount} 
             initialDescription={pendingPayment?.description}
+            currentWalletBalance={walletBalance}
             onConfirm={handlePaymentConfirm} 
           />
         )}
         {currentView === AppView.TOP_UP && (
           <TopUpView 
             onBack={() => setCurrentView(AppView.DASHBOARD)} 
-            onConfirm={handlePaymentConfirm} 
+            onConfirm={(amt) => handlePaymentConfirm(amt)} 
             onPurchase={handlePurchaseProduct}
             currentBalance={walletBalance}
             onNavigateToTransfer={() => setCurrentView(AppView.TRANSFER)}
@@ -316,25 +312,20 @@ const App: React.FC = () => {
             }}
           />
         )}
-        {currentView === AppView.CASES_LEDGER && (
-          <CasesLedgerView />
-        )}
+        {currentView === AppView.CASES_LEDGER && <CasesLedgerView />}
         {currentView === AppView.APPOINTMENTS && (
           <AppointmentsView 
             appointments={appointments} 
             onNavigate={setCurrentView}
-            onReschedule={handleRescheduleStart}
-            onCancel={handleCancelAppointment}
+            onReschedule={(apt) => { setReschedulingAppointment(apt); setCurrentView(AppView.RESCHEDULE_APPOINTMENT); }}
+            onCancel={(id) => setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'Cancelled' } : a))}
           />
         )}
         {(currentView === AppView.BOOK_APPOINTMENT || currentView === AppView.RESCHEDULE_APPOINTMENT) && (
           <BookAppointmentView 
             appointmentToEdit={reschedulingAppointment || undefined}
             onConfirm={handleBookAppointment} 
-            onBack={() => {
-              setReschedulingAppointment(null);
-              setCurrentView(AppView.APPOINTMENTS);
-            }} 
+            onBack={() => { setReschedulingAppointment(null); setCurrentView(AppView.APPOINTMENTS); }} 
           />
         )}
         {currentView === AppView.PROFILE && (
@@ -346,23 +337,22 @@ const App: React.FC = () => {
             activeZoneId={activeParkingZoneId}
             onSetActiveZone={setActiveParkingZoneId}
             onAddZone={(zone) => setParkingZones([...parkingZones, zone])}
+            language={language}
           />
         )}
         {currentView === AppView.PARKING_MANAGEMENT && (
-          <ParkingManagementView 
-            onBack={() => setCurrentView(AppView.PROFILE)}
-            activeZone={activeZone}
-          />
+          <ParkingManagementView onBack={() => setCurrentView(AppView.PROFILE)} activeZone={activeZone} />
         )}
         {currentView === AppView.SETTINGS && (
-          <SettingsView onBack={() => setCurrentView(AppView.PROFILE)} />
+          <SettingsView 
+            onBack={() => setCurrentView(AppView.PROFILE)} 
+            language={language}
+            onSetLanguage={setLanguage}
+          />
         )}
       </main>
 
-      <BottomNav 
-        activeView={currentView} 
-        onNavigate={setCurrentView} 
-      />
+      <BottomNav activeView={currentView} onNavigate={setCurrentView} language={language} />
     </div>
   );
 };

@@ -31,7 +31,7 @@ const UtilityPaymentView: React.FC<UtilityPaymentViewProps> = ({ onBack, onPay }
       id: 'heat', 
       provider: 'Termoelectrica', 
       type: 'Centralized Heating', 
-      amount: 1200.00, 
+      amount: 1245.50, 
       dueDate: 'Oct 20', 
       icon: Thermometer, 
       color: 'text-red-600',
@@ -41,7 +41,7 @@ const UtilityPaymentView: React.FC<UtilityPaymentViewProps> = ({ onBack, onPay }
     { 
       id: 'elec', 
       provider: 'Premier Energy', 
-      type: 'Electricity', 
+      type: 'Electricity Consumption', 
       amount: 450.20, 
       dueDate: 'Nov 05', 
       icon: Zap, 
@@ -61,7 +61,7 @@ const UtilityPaymentView: React.FC<UtilityPaymentViewProps> = ({ onBack, onPay }
     { 
       id: 'gas', 
       provider: 'Moldovagaz', 
-      type: 'Natural Gas', 
+      type: 'Natural Gas Supply', 
       amount: 390.50, 
       dueDate: 'Nov 02', 
       icon: Flame, 
@@ -71,7 +71,7 @@ const UtilityPaymentView: React.FC<UtilityPaymentViewProps> = ({ onBack, onPay }
     { 
       id: 'housing', 
       provider: 'Infocom / Î.M.G.F.L.', 
-      type: 'Housing Stock & Maintenance', 
+      type: 'Housing Stock Maintenance', 
       amount: 210.00, 
       dueDate: 'Oct 31', 
       icon: Building, 
@@ -123,11 +123,11 @@ const UtilityPaymentView: React.FC<UtilityPaymentViewProps> = ({ onBack, onPay }
       .filter(u => selectedUtilities.includes(u.id))
       .map(u => u.provider)
       .join(', ');
-    onPay(totalSelected, `Consolidated Utility Payment for: ${selectedProviders}`);
+    onPay(totalSelected, `Utility payment for: ${selectedProviders}`);
   };
 
   return (
-    <div className="space-y-6 animate-in slide-in-from-right-4 duration-300 pb-20">
+    <div className="space-y-6 animate-in slide-in-from-right-4 duration-300 pb-40">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-lg -ml-2 transition-colors">
@@ -137,34 +137,35 @@ const UtilityPaymentView: React.FC<UtilityPaymentViewProps> = ({ onBack, onPay }
         </div>
         <button 
           onClick={selectAll}
-          className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
+          className="text-[10px] font-black text-blue-600 uppercase bg-blue-50 px-3 py-2 rounded-xl transition-colors hover:bg-blue-100"
         >
           {selectedUtilities.length === utilities.length ? 'Deselect All' : 'Select All'}
         </button>
       </div>
 
-      <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100 flex items-start gap-3">
+      <div className="bg-orange-50 p-5 rounded-3xl border border-orange-100 flex items-start gap-3 shadow-sm">
         <AlertTriangle className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-bold text-orange-900">Overdue Payments Detected</p>
-          <p className="text-xs text-orange-700 leading-relaxed">
-            One or more bills have passed their due date. Pay promptly to avoid service interruptions or late fees.
+          <p className="text-sm font-bold text-orange-900">Payment Notice</p>
+          <p className="text-xs text-orange-700 leading-relaxed font-medium">
+            Some bills are overdue. Chișinău municipal services may apply late fees for delayed settlements.
           </p>
         </div>
       </div>
 
       <div className="space-y-3">
+        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Pending Invoices</p>
         {utilities.map((u) => (
           <button
             key={u.id}
             onClick={() => toggleUtility(u.id)}
-            className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left ${
+            className={`w-full flex items-center gap-4 p-5 rounded-[2rem] border-2 transition-all text-left ${
               selectedUtilities.includes(u.id) 
-                ? 'border-blue-600 bg-white shadow-md scale-[1.01]' 
+                ? 'border-blue-600 bg-white shadow-md' 
                 : 'border-transparent bg-white shadow-sm hover:border-blue-100'
             }`}
           >
-            <div className={`w-12 h-12 rounded-xl ${u.bg} ${u.color} flex items-center justify-center shrink-0`}>
+            <div className={`w-12 h-12 rounded-2xl ${u.bg} ${u.color} flex items-center justify-center shrink-0 shadow-inner`}>
               <u.icon className="w-6 h-6" />
             </div>
             <div className="flex-1 min-w-0">
@@ -175,17 +176,21 @@ const UtilityPaymentView: React.FC<UtilityPaymentViewProps> = ({ onBack, onPay }
                 )}
               </div>
               <p className="text-sm font-bold text-gray-800 truncate">{u.type}</p>
-              <p className="text-[10px] text-gray-500 font-medium">Due: {u.dueDate}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-[10px] text-gray-400 font-bold uppercase">Due Date:</p>
+                <p className={`text-[10px] font-bold ${u.isOverdue ? 'text-red-500' : 'text-gray-500'}`}>{u.dueDate}</p>
+              </div>
             </div>
-            <div className="text-right flex flex-col items-end gap-1">
-              <p className="text-base font-black text-gray-900">{u.amount.toFixed(2)} <span className="text-[10px] text-gray-400">MDL</span></p>
+            <div className="text-right flex flex-col items-end gap-2">
+              <div className="flex flex-col items-end">
+                <p className="text-sm font-black text-gray-900 leading-none">{u.amount.toFixed(2)}</p>
+                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">MDL</p>
+              </div>
               <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                 selectedUtilities.includes(u.id) ? 'bg-blue-600 border-blue-600' : 'border-gray-200'
               }`}>
-                {selectedUtilities.includes(u.id) ? (
+                {selectedUtilities.includes(u.id) && (
                   <CheckCircle2 className="w-4 h-4 text-white" />
-                ) : (
-                  <Circle className="w-4 h-4 text-gray-100" />
                 )}
               </div>
             </div>
@@ -194,21 +199,21 @@ const UtilityPaymentView: React.FC<UtilityPaymentViewProps> = ({ onBack, onPay }
       </div>
 
       {selectedUtilities.length > 0 && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-md px-4 animate-in slide-in-from-bottom-6 duration-300">
-          <div className="bg-white p-5 rounded-[2.5rem] border border-slate-200 shadow-2xl space-y-4">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-md px-6 animate-in slide-in-from-bottom-6 duration-300">
+          <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-2xl space-y-4">
             <div className="flex justify-between items-center px-2">
               <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Items Selected: {selectedUtilities.length}</p>
-                <p className="text-xs font-bold text-slate-600">Total Payable Amount</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Bills Selected: {selectedUtilities.length}</p>
+                <p className="text-xs font-bold text-slate-600">Total Consolidated Sum</p>
               </div>
-              <div className="text-right">
-                <span className="text-2xl font-black text-blue-600">{totalSelected.toFixed(2)}</span>
-                <span className="text-xs font-bold text-slate-400 ml-1">MDL</span>
+              <div className="text-right flex items-baseline gap-1">
+                <span className="text-3xl font-black text-blue-600 tracking-tighter">{totalSelected.toFixed(2)}</span>
+                <span className="text-xs font-bold text-slate-400">MDL</span>
               </div>
             </div>
             <button 
               onClick={handleProceedToPayment}
-              className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 flex items-center justify-center gap-3 active:scale-95"
+              className="w-full py-4.5 bg-blue-600 text-white rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 flex items-center justify-center gap-3 active:scale-95"
             >
               <CreditCard className="w-5 h-5" />
               Pay via MPay Gateway
@@ -217,9 +222,9 @@ const UtilityPaymentView: React.FC<UtilityPaymentViewProps> = ({ onBack, onPay }
         </div>
       )}
 
-      <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-8">
-        <p className="text-[10px] text-blue-800 leading-relaxed font-medium italic text-center">
-          Consolidated billing is updated every 24 hours. Payments via MPay are reflected in the municipal ledger instantly.
+      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center">
+        <p className="text-[10px] text-slate-500 leading-relaxed font-medium italic">
+          Municipal consolidated billing via MPay ensures instant clearance of debts with Termoelectrica, Premier Energy, and Moldovagaz.
         </p>
       </div>
     </div>

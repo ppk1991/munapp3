@@ -1,14 +1,18 @@
 
 import React, { useState } from 'react';
-import { ChevronLeft, Bell, Globe, Shield, Eye, Smartphone, ChevronRight, FileText, CreditCard, CalendarCheck } from 'lucide-react';
+import { ChevronLeft, Bell, Globe, Shield, Eye, Smartphone, ChevronRight, FileText, CreditCard, CalendarCheck, Check } from 'lucide-react';
+import { Language } from '../types';
 
 interface SettingsViewProps {
   onBack: () => void;
+  language: Language;
+  onSetLanguage: (lang: Language) => void;
 }
 
-const SettingsView: React.FC<SettingsViewProps> = ({ onBack }) => {
+const SettingsView: React.FC<SettingsViewProps> = ({ onBack, language, onSetLanguage }) => {
   const [notifications, setNotifications] = useState(true);
   const [biometrics, setBiometrics] = useState(true);
+  const [showLangPicker, setShowLangPicker] = useState(false);
   
   // Detailed notification states
   const [caseUpdates, setCaseUpdates] = useState(true);
@@ -25,6 +29,14 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onBack }) => {
     </button>
   );
 
+  const languages: { code: Language, label: string, native: string }[] = [
+    { code: 'ro', label: 'Romanian', native: 'Română' },
+    { code: 'ru', label: 'Russian', native: 'Русский' },
+    { code: 'en', label: 'English', native: 'English' }
+  ];
+
+  const currentLangLabel = languages.find(l => l.code === language)?.native || 'English';
+
   return (
     <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
       <div className="flex items-center gap-2">
@@ -38,6 +50,75 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onBack }) => {
       </div>
 
       <div className="space-y-6">
+        <section className="space-y-2">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">App Preferences</p>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
+            <button 
+              onClick={() => setShowLangPicker(!showLangPicker)}
+              className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <Globe className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-bold text-gray-800">Language</p>
+                  <p className="text-[10px] text-gray-400">{currentLangLabel}</p>
+                </div>
+              </div>
+              <ChevronRight className={`w-4 h-4 text-gray-300 transition-transform ${showLangPicker ? 'rotate-90' : ''}`} />
+            </button>
+
+            {showLangPicker && (
+              <div className="bg-slate-50 p-2 space-y-1 animate-in slide-in-from-top-2">
+                {languages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => {
+                      onSetLanguage(lang.code);
+                      setShowLangPicker(false);
+                    }}
+                    className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${
+                      language === lang.code ? 'bg-white shadow-sm' : 'hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className="text-left">
+                      <p className={`text-xs font-bold ${language === lang.code ? 'text-blue-600' : 'text-gray-700'}`}>{lang.native}</p>
+                      <p className="text-[10px] text-gray-400">{lang.label}</p>
+                    </div>
+                    {language === lang.code && <Check className="w-4 h-4 text-blue-600" />}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center">
+                  <Shield className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-800">Privacy & Security</p>
+                  <p className="text-[10px] text-gray-400">Manage data sharing</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-300" />
+            </button>
+            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center">
+                  <Eye className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-800">Appearance</p>
+                  <p className="text-[10px] text-gray-400">Light / Dark / Auto</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-300" />
+            </button>
+          </div>
+        </section>
+
         <section className="space-y-2">
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Security & Access</p>
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
@@ -65,108 +146,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onBack }) => {
               </div>
               <Toggle active={notifications} onToggle={() => setNotifications(!notifications)} />
             </div>
-          </div>
-        </section>
-
-        <section className="space-y-2">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Notification Preferences</p>
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center">
-                  <FileText className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-800">Case Updates</p>
-                  <p className="text-[10px] text-gray-400">Status changes & messages</p>
-                </div>
-              </div>
-              <Toggle 
-                active={caseUpdates && notifications} 
-                onToggle={() => setCaseUpdates(!caseUpdates)} 
-                disabled={!notifications}
-              />
-            </div>
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center">
-                  <CreditCard className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-800">Payment Reminders</p>
-                  <p className="text-[10px] text-gray-400">Tax & utility due dates</p>
-                </div>
-              </div>
-              <Toggle 
-                active={paymentReminders && notifications} 
-                onToggle={() => setPaymentReminders(!paymentReminders)} 
-                disabled={!notifications}
-              />
-            </div>
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center">
-                  <CalendarCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-800">Appointments</p>
-                  <p className="text-[10px] text-gray-400">Confirmations & reminders</p>
-                </div>
-              </div>
-              <Toggle 
-                active={appointmentConfirmations && notifications} 
-                onToggle={() => setAppointmentConfirmations(!appointmentConfirmations)} 
-                disabled={!notifications}
-              />
-            </div>
-          </div>
-          {!notifications && (
-            <p className="text-[10px] text-red-500 font-medium px-2 pt-1 flex items-center gap-1">
-              <Shield className="w-3 h-3" />
-              Master notifications are disabled.
-            </p>
-          )}
-        </section>
-
-        <section className="space-y-2">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">App Preferences</p>
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
-            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center">
-                  <Globe className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-800">Language</p>
-                  <p className="text-[10px] text-gray-400">Romanian (Default)</p>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-gray-300" />
-            </button>
-            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center">
-                  <Shield className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-800">Privacy & Security</p>
-                  <p className="text-[10px] text-gray-400">Manage data sharing</p>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-gray-300" />
-            </button>
-            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center">
-                  <Eye className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-800">Appearance</p>
-                  <p className="text-[10px] text-gray-400">Light / Dark / Auto</p>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-gray-300" />
-            </button>
           </div>
         </section>
       </div>

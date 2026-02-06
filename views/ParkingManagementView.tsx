@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ChevronLeft, ParkingCircle, Clock, MapPin, History, PlusCircle, ShieldCheck, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ParkingCircle, Clock, MapPin, History, ShieldCheck, AlertCircle } from 'lucide-react';
 import { ParkingZone } from '../types';
 
 interface ParkingManagementViewProps {
@@ -73,14 +73,10 @@ const ParkingManagementView: React.FC<ParkingManagementViewProps> = ({ onBack, a
 
       <div className="space-y-3">
         <p className="text-sm font-bold text-gray-800 px-1">Management Actions</p>
-        <div className="grid grid-cols-2 gap-3">
-          <button className="flex items-center justify-center gap-2 p-4 bg-white border border-gray-100 rounded-2xl font-bold text-gray-700 hover:border-blue-200 transition-all active:scale-95 shadow-sm">
-            <PlusCircle className="w-4 h-4 text-blue-500" />
-            Add Vehicle
-          </button>
-          <button className="flex items-center justify-center gap-2 p-4 bg-white border border-gray-100 rounded-2xl font-bold text-gray-700 hover:border-blue-200 transition-all active:scale-95 shadow-sm">
+        <div className="grid grid-cols-1">
+          <button className="flex items-center justify-center gap-2 p-5 bg-white border border-gray-100 rounded-3xl font-bold text-gray-700 hover:border-blue-200 transition-all active:scale-95 shadow-sm">
             <History className="w-4 h-4 text-blue-500" />
-            Session Log
+            View Session History & Fines
           </button>
         </div>
       </div>
